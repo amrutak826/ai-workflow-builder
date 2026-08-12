@@ -4,4 +4,4 @@
     connection_info:
       use_prepared_statements: false
       isolation_level: read-committed
-  tables: "!include default/tables.yaml"
+  tables: "!include default/tables/tables.yaml"
