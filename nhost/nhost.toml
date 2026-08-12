@@ -22,4 +22,7 @@ expiresIn = 43200
 [postgres]
 version = "14.6-20230605-1"
 
+[postgres.resources.storage]
+capacity = 1
+
 [provider]
