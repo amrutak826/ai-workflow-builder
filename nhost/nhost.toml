@@ -9,10 +9,6 @@ name = "HASURA_GRAPHQL_ADMIN_SECRET"
 value = "{{ secrets.HASURA_GRAPHQL_ADMIN_SECRET }}"
 
 [[global.environment]]
-name = "GRAPHQL_ENDPOINT"
-value = "{{ NHOST_HASURA_URL }}"
-
-[[global.environment]]
 name = "LLM_API_KEY"
 value = "{{ secrets.LLM_API_KEY }}"
 
@@ -25,24 +21,27 @@ name = "SLACK_WEBHOOK_URL"
 value = "{{ secrets.SLACK_WEBHOOK_URL }}"
 
 [hasura]
-  version = "v2.36.0"
-  adminSecret = "%{HASURA_GRAPHQL_ADMIN_SECRET}"
-  webhookSecret = "%{NHOST_WEBHOOK_SECRET}"
+version = "v2.36.0"
+adminSecret = "{{ secrets.HASURA_GRAPHQL_ADMIN_SECRET }}"
+webhookSecret = "{{ secrets.NHOST_WEBHOOK_SECRET }}"
 
 [auth]
-  version = "0.24.0"
-  [auth.method.emailPassword]
-    hibpEnabled = false
-  [auth.session.accessToken]
-    expiresIn = 900
-  [auth.session.refreshToken]
-    expiresIn = 43200
+version = "0.24.0"
+
+[auth.method.emailPassword]
+hibpEnabled = false
+
+[auth.session.accessToken]
+expiresIn = 900
+
+[auth.session.refreshToken]
+expiresIn = 43200
 
 [postgres]
-  version = "14.6-20230605-1"
+version = "14.6-20230605-1"
 
 [functions]
-  [functions.node]
-    version = 20
+[functions.node]
+version = 20
 
 [provider]
