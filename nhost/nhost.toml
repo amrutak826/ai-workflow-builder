@@ -1,11 +1,28 @@
 [global]
-  [global.environment]
-    ACTION_SECRET = "%{ACTION_SECRET}"
-    HASURA_GRAPHQL_ADMIN_SECRET = "%{HASURA_GRAPHQL_ADMIN_SECRET}"
-    GRAPHQL_ENDPOINT = "%{NHOST_HASURA_URL}"
-    LLM_API_KEY = "%{LLM_API_KEY}"
-    LLM_PROVIDER = "%{LLM_PROVIDER}"       # groq | openrouter | gemini | stub
-    SLACK_WEBHOOK_URL = "%{SLACK_WEBHOOK_URL}"
+
+[[global.environment]]
+name = "ACTION_SECRET"
+value = "{{ secrets.ACTION_SECRET }}"
+
+[[global.environment]]
+name = "HASURA_GRAPHQL_ADMIN_SECRET"
+value = "{{ secrets.HASURA_GRAPHQL_ADMIN_SECRET }}"
+
+[[global.environment]]
+name = "GRAPHQL_ENDPOINT"
+value = "{{ NHOST_HASURA_URL }}"
+
+[[global.environment]]
+name = "LLM_API_KEY"
+value = "{{ secrets.LLM_API_KEY }}"
+
+[[global.environment]]
+name = "LLM_PROVIDER"
+value = "stub"
+
+[[global.environment]]
+name = "SLACK_WEBHOOK_URL"
+value = "{{ secrets.SLACK_WEBHOOK_URL }}"
 
 [hasura]
   version = "v2.36.0"
@@ -26,6 +43,6 @@
 
 [functions]
   [functions.node]
-    version = 18
+    version = 20
 
 [provider]
