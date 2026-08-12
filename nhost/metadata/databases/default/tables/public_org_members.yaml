@@ -1,0 +1,65 @@
+table:
+  schema: public
+  name: org_members
+object_relationships:
+  - name: organization
+    using:
+      foreign_key_constraint_on: org_id
+select_permissions:
+  - role: user
+    permission:
+      # Any member can see the roster of their own org (needed for the
+      # approver picker on approval_gate steps).
+      columns:
+        - id
+        - org_id
+        - user_id
+        - role
+        - created_at
+      filter:
+        organization:
+          members:
+            user_id:
+              _eq: X-Hasura-User-Id
+insert_permissions:
+  - role: user
+    permission:
+      # Only an owner can add members to their own org — role management
+      # is explicitly excluded from the editor role.
+      columns:
+        - org_id
+        - user_id
+        - role
+      check:
+        organization:
+          members:
+            _and:
+              - user_id:
+                  _eq: X-Hasura-User-Id
+              - role:
+                  _eq: owner
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - role
+      filter:
+        organization:
+          members:
+            _and:
+              - user_id:
+                  _eq: X-Hasura-User-Id
+              - role:
+                  _eq: owner
+      check: null
+delete_permissions:
+  - role: user
+    permission:
+      filter:
+        organization:
+          members:
+            _and:
+              - user_id:
+                  _eq: X-Hasura-User-Id
+              - role:
+                  _eq: owner

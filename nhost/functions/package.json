@@ -1,0 +1,13 @@
+{
+  "name": "ai-workflow-builder-functions",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.0"
+  }
+}

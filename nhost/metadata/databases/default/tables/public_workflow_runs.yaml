@@ -1,0 +1,47 @@
+table:
+  schema: public
+  name: workflow_runs
+object_relationships:
+  - name: workflow
+    using:
+      foreign_key_constraint_on: workflow_id
+  - name: organization
+    using:
+      foreign_key_constraint_on: org_id
+array_relationships:
+  - name: step_runs
+    using:
+      foreign_key_constraint_on:
+        column: workflow_run_id
+        table:
+          schema: public
+          name: step_runs
+select_permissions:
+  - role: user
+    permission:
+      # Runs (and their live status) are visible to any member of the org —
+      # including viewers, who can watch but not trigger (see: no insert
+      # permission below).
+      columns:
+        - id
+        - workflow_id
+        - org_id
+        - status
+        - trigger_type
+        - triggered_by
+        - started_at
+        - completed_at
+        - error
+        - created_at
+      filter:
+        organization:
+          members:
+            user_id:
+              _eq: X-Hasura-User-Id
+# Deliberately NO insert/update/delete permissions for role "user".
+# Runs are only ever created/mutated by triggerWorkflowRun and approveStep,
+# both of which call Hasura with the admin secret after doing their own
+# authorization checks in code. This keeps "who can start a run" and
+# "who can resume a paused run" as application-level decisions rather
+# than declarative row permissions, which is required for the
+# approval_gate's mid-execution role check.

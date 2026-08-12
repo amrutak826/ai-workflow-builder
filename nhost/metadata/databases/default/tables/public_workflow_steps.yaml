@@ -1,0 +1,119 @@
+table:
+  schema: public
+  name: workflow_steps
+object_relationships:
+  - name: workflow
+    using:
+      foreign_key_constraint_on: workflow_id
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - workflow_id
+        - step_order
+        - type
+        - name
+        - config
+        - created_at
+      filter:
+        workflow:
+          organization:
+            members:
+              user_id:
+                _eq: X-Hasura-User-Id
+insert_permissions:
+  - role: user
+    permission:
+      columns:
+        - workflow_id
+        - step_order
+        - type
+        - name
+        - config
+      # Layer 2: db_write and notify reach outside the sandbox (they write
+      # to our own tables / fire real alerts) so only an owner may add them.
+      # All other step types only need editor+.
+      check:
+        _or:
+          - _and:
+              - type:
+                  _in: [llm_call, http_request, conditional_branch, approval_gate]
+              - workflow:
+                  organization:
+                    members:
+                      _and:
+                        - user_id:
+                            _eq: X-Hasura-User-Id
+                        - role:
+                            _in: [owner, editor]
+          - _and:
+              - type:
+                  _in: [db_write, notify]
+              - workflow:
+                  organization:
+                    members:
+                      _and:
+                        - user_id:
+                            _eq: X-Hasura-User-Id
+                        - role:
+                            _eq: owner
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - step_order
+        - name
+        - config
+      filter:
+        _or:
+          - _and:
+              - type:
+                  _in: [llm_call, http_request, conditional_branch, approval_gate]
+              - workflow:
+                  organization:
+                    members:
+                      _and:
+                        - user_id:
+                            _eq: X-Hasura-User-Id
+                        - role:
+                            _in: [owner, editor]
+          - _and:
+              - type:
+                  _in: [db_write, notify]
+              - workflow:
+                  organization:
+                    members:
+                      _and:
+                        - user_id:
+                            _eq: X-Hasura-User-Id
+                        - role:
+                            _eq: owner
+      check: null
+delete_permissions:
+  - role: user
+    permission:
+      filter:
+        _or:
+          - _and:
+              - type:
+                  _in: [llm_call, http_request, conditional_branch, approval_gate]
+              - workflow:
+                  organization:
+                    members:
+                      _and:
+                        - user_id:
+                            _eq: X-Hasura-User-Id
+                        - role:
+                            _in: [owner, editor]
+          - _and:
+              - type:
+                  _in: [db_write, notify]
+              - workflow:
+                  organization:
+                    members:
+                      _and:
+                        - user_id:
+                            _eq: X-Hasura-User-Id
+                        - role:
+                            _eq: owner

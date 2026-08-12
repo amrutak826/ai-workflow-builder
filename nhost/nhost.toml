@@ -1,0 +1,31 @@
+[global]
+  [global.environment]
+    ACTION_SECRET = "%{ACTION_SECRET}"
+    HASURA_GRAPHQL_ADMIN_SECRET = "%{HASURA_GRAPHQL_ADMIN_SECRET}"
+    GRAPHQL_ENDPOINT = "%{NHOST_HASURA_URL}"
+    LLM_API_KEY = "%{LLM_API_KEY}"
+    LLM_PROVIDER = "%{LLM_PROVIDER}"       # groq | openrouter | gemini | stub
+    SLACK_WEBHOOK_URL = "%{SLACK_WEBHOOK_URL}"
+
+[hasura]
+  version = "v2.36.0"
+  adminSecret = "%{HASURA_GRAPHQL_ADMIN_SECRET}"
+  webhookSecret = "%{NHOST_WEBHOOK_SECRET}"
+
+[auth]
+  version = "0.24.0"
+  [auth.method.emailPassword]
+    hibpEnabled = false
+  [auth.session.accessToken]
+    expiresIn = 900
+  [auth.session.refreshToken]
+    expiresIn = 43200
+
+[postgres]
+  version = "14.6-20230605-1"
+
+[functions]
+  [functions.node]
+    version = 18
+
+[provider]

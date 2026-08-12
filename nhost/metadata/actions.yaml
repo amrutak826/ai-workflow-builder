@@ -1,0 +1,57 @@
+actions:
+  - name: triggerWorkflowRun
+    definition:
+      kind: synchronous
+      handler: "{{NHOST_FUNCTIONS_URL}}/triggerWorkflowRun"
+      forward_client_headers: true
+      headers:
+        - name: x-action-secret
+          value_from_env: ACTION_SECRET
+      request_transform:
+        method: POST
+        url: "{{$base_url}}"
+        body:
+          action: transform
+          template: |
+            {
+              "input": {{$body.input}},
+              "session_variables": {{$body.session_variables}}
+            }
+    permissions:
+      - role: user
+
+  - name: approveStep
+    definition:
+      kind: synchronous
+      handler: "{{NHOST_FUNCTIONS_URL}}/approveStep"
+      forward_client_headers: true
+      headers:
+        - name: x-action-secret
+          value_from_env: ACTION_SECRET
+    permissions:
+      - role: user
+
+  - name: webhookTrigger
+    definition:
+      kind: synchronous
+      handler: "{{NHOST_FUNCTIONS_URL}}/webhookTrigger"
+      forward_client_headers: false
+      headers:
+        - name: x-action-secret
+          value_from_env: ACTION_SECRET
+    # Public/unauthenticated on purpose — this is the inbound endpoint an
+    # external system calls to start a run. Authorization is the
+    # workflow_id + webhook_secret pair checked inside the handler itself,
+    # not a Hasura session-variable permission (there is no logged-in user).
+    permissions:
+      - role: public
+
+custom_types:
+  enums: []
+  input_objects:
+    - name: TriggerWorkflowRunInput
+    - name: ApproveStepInput
+  objects:
+    - name: TriggerWorkflowRunOutput
+    - name: ApproveStepOutput
+  scalars: []

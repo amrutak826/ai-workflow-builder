@@ -1,0 +1,23 @@
+table:
+  schema: public
+  name: workflow_outputs
+object_relationships:
+  - name: run
+    using:
+      foreign_key_constraint_on: workflow_run_id
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - id
+        - workflow_run_id
+        - step_run_id
+        - data
+        - created_at
+      filter:
+        run:
+          organization:
+            members:
+              user_id:
+                _eq: X-Hasura-User-Id
+# Written only by the Action handler (db_write step execution) via admin secret.

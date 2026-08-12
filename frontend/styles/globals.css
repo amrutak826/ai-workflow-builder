@@ -1,0 +1,42 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+  background: #0b0d12;
+  color: #e6e8ec;
+}
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-weight: 600;
+}
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.card {
+  background: #151822;
+  border: 1px solid #262b3a;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+input, select, textarea {
+  background: #0f121a;
+  border: 1px solid #2a2f40;
+  color: #e6e8ec;
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-pending { background: #33384a; color: #b7bbcc; }
+.badge-running { background: #1d4ed8; color: white; }
+.badge-paused { background: #b45309; color: white; }
+.badge-succeeded, .badge-completed { background: #15803d; color: white; }
+.badge-failed { background: #b91c1c; color: white; }
+.badge-skipped { background: #4b5563; color: white; }

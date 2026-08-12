@@ -1,0 +1,95 @@
+table:
+  schema: public
+  name: workflows
+object_relationships:
+  - name: organization
+    using:
+      foreign_key_constraint_on: org_id
+array_relationships:
+  - name: steps
+    using:
+      foreign_key_constraint_on:
+        column: workflow_id
+        table:
+          schema: public
+          name: workflow_steps
+  - name: triggers
+    using:
+      foreign_key_constraint_on:
+        column: workflow_id
+        table:
+          schema: public
+          name: workflow_triggers
+  - name: runs
+    using:
+      foreign_key_constraint_on:
+        column: workflow_id
+        table:
+          schema: public
+          name: workflow_runs
+select_permissions:
+  - role: user
+    permission:
+      # Layer 1: viewer/editor/owner — any role — can see workflows that
+      # belong to an org they are a member of. Cross-org rows never match
+      # this filter, even if the caller supplies the row's UUID directly.
+      columns:
+        - id
+        - org_id
+        - name
+        - description
+        - created_by
+        - is_active
+        - created_at
+        - updated_at
+      filter:
+        organization:
+          members:
+            user_id:
+              _eq: X-Hasura-User-Id
+insert_permissions:
+  - role: user
+    permission:
+      # editor and owner can create workflows; viewer cannot (no matching row).
+      columns:
+        - org_id
+        - name
+        - description
+      check:
+        organization:
+          members:
+            _and:
+              - user_id:
+                  _eq: X-Hasura-User-Id
+              - role:
+                  _in: [owner, editor]
+      set:
+        created_by: x-hasura-User-Id
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - name
+        - description
+        - is_active
+      filter:
+        organization:
+          members:
+            _and:
+              - user_id:
+                  _eq: X-Hasura-User-Id
+              - role:
+                  _in: [owner, editor]
+      check: null
+delete_permissions:
+  - role: user
+    permission:
+      # Deleting a workflow is destructive — owner only.
+      filter:
+        organization:
+          members:
+            _and:
+              - user_id:
+                  _eq: X-Hasura-User-Id
+              - role:
+                  _eq: owner

@@ -1,0 +1,61 @@
+table:
+  schema: public
+  name: step_runs
+object_relationships:
+  - name: run
+    using:
+      foreign_key_constraint_on: workflow_run_id
+  - name: step
+    using:
+      foreign_key_constraint_on: workflow_step_id
+select_permissions:
+  - role: user
+    permission:
+      # This is what the live-progress subscription reads. Scoped through
+      # run -> organization -> members so an Org B user can never subscribe
+      # to Org A's step_runs, even filtering by a guessed workflow_run_id.
+      columns:
+        - id
+        - workflow_run_id
+        - workflow_step_id
+        - step_order
+        - type
+        - status
+        - input
+        - output
+        - error
+        - attempt_count
+        - approved_by
+        - approved_at
+        - started_at
+        - completed_at
+        - created_at
+      filter:
+        run:
+          organization:
+            members:
+              user_id:
+                _eq: X-Hasura-User-Id
+# No insert/update/delete for role "user" — step_runs are only written by
+# the Action handler (admin secret) as it executes each step, and by
+# approveStep when resuming a paused approval_gate.
+event_triggers:
+  - name: on_notify_step_running
+    definition:
+      enable_manual: false
+      update:
+        columns: [status]
+    retry_conf:
+      num_retries: 3
+      interval_sec: 5
+      timeout_sec: 30
+    webhook: "{{NHOST_FUNCTIONS_URL}}/notifyStepHandler"
+    headers:
+      - name: x-hasura-event-secret
+        value_from_env: ACTION_SECRET
+    # notify is deliberately implemented as an event trigger rather than
+    # inline code in the Action: the Action handler only flips a step_runs
+    # row to status='running' for type='notify' steps. This webhook
+    # (functions/notifyStepHandler.ts) picks that up, sends the Slack/email
+    # alert, and then flips the row to succeeded/failed. The handler itself
+    # ignores events where new.type != 'notify'.

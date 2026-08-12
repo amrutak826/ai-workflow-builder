@@ -1,0 +1,134 @@
+# ────────────────────────────────────────────────────────────────
+# Query: an org's workflows with their steps, triggers, and most
+# recent run status
+# ────────────────────────────────────────────────────────────────
+query OrgWorkflows($orgId: uuid!) {
+  workflows(where: { org_id: { _eq: $orgId } }, order_by: { created_at: desc }) {
+    id
+    name
+    description
+    is_active
+    created_at
+    steps(order_by: { step_order: asc }) {
+      id
+      step_order
+      type
+      name
+      config
+    }
+    triggers {
+      id
+      type
+      is_enabled
+      config
+    }
+    runs(order_by: { created_at: desc }, limit: 1) {
+      id
+      status
+      trigger_type
+      started_at
+      completed_at
+      error
+    }
+  }
+}
+
+# ────────────────────────────────────────────────────────────────
+# Mutation: create a workflow with its steps and triggers in one
+# nested insert
+# ────────────────────────────────────────────────────────────────
+mutation CreateWorkflow($orgId: uuid!, $name: String!, $description: String) {
+  insert_workflows_one(object: { org_id: $orgId, name: $name, description: $description }) {
+    id
+    name
+  }
+}
+
+mutation AddStep($workflowId: uuid!, $stepOrder: Int!, $type: String!, $name: String, $config: jsonb!) {
+  insert_workflow_steps_one(
+    object: { workflow_id: $workflowId, step_order: $stepOrder, type: $type, name: $name, config: $config }
+  ) {
+    id
+    step_order
+    type
+  }
+}
+
+mutation AddTrigger($workflowId: uuid!, $type: String!, $config: jsonb!, $webhookSecret: String) {
+  insert_workflow_triggers_one(
+    object: { workflow_id: $workflowId, type: $type, config: $config, webhook_secret: $webhookSecret }
+  ) {
+    id
+    type
+  }
+}
+
+mutation UpdateWorkflow($id: uuid!, $name: String, $description: String, $isActive: Boolean) {
+  update_workflows_by_pk(pk_columns: { id: $id }, _set: { name: $name, description: $description, is_active: $isActive }) {
+    id
+  }
+}
+
+# ────────────────────────────────────────────────────────────────
+# Mutation: start a run (Manual trigger) — this is the Hasura Action,
+# not a plain table mutation, since it needs server-side authorization,
+# quota checks, and step execution.
+# ────────────────────────────────────────────────────────────────
+mutation TriggerRun($workflowId: uuid!) {
+  triggerWorkflowRun(workflow_id: $workflowId) {
+    workflow_run_id
+    status
+  }
+}
+
+# ────────────────────────────────────────────────────────────────
+# Mutation: approve (or reject) a paused approval_gate step
+# ────────────────────────────────────────────────────────────────
+mutation ApproveStep($stepRunId: uuid!, $approve: Boolean!, $reason: String) {
+  approveStep(step_run_id: $stepRunId, approve: $approve, reason: $reason) {
+    step_run_id
+    status
+    workflow_run_status
+  }
+}
+
+# ────────────────────────────────────────────────────────────────
+# Subscription: live step-by-step progress for one run, including the
+# "paused, awaiting approval" state
+# ────────────────────────────────────────────────────────────────
+subscription StepRunProgress($workflowRunId: uuid!) {
+  step_runs(where: { workflow_run_id: { _eq: $workflowRunId } }, order_by: { step_order: asc }) {
+    id
+    step_order
+    type
+    status
+    output
+    error
+    attempt_count
+    approved_by
+    approved_at
+    started_at
+    completed_at
+  }
+  workflow_runs_by_pk(id: $workflowRunId) {
+    id
+    status
+    error
+    started_at
+    completed_at
+  }
+}
+
+# ────────────────────────────────────────────────────────────────
+# Aggregation: org usage (quota + avg run duration) — from the
+# org_usage_view Postgres view
+# ────────────────────────────────────────────────────────────────
+query OrgUsage($orgId: uuid!) {
+  org_usage_view(where: { org_id: { _eq: $orgId } }) {
+    quota_limit
+    quota_used
+    quota_remaining
+    runs_this_month
+    avg_run_duration_seconds
+  }
+}
