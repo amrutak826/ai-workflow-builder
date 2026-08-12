@@ -8,17 +8,11 @@ value = "{{ secrets.ACTION_SECRET }}"
 name = "HASURA_GRAPHQL_ADMIN_SECRET"
 value = "{{ secrets.HASURA_GRAPHQL_ADMIN_SECRET }}"
 
-[[global.environment]]
-name = "LLM_API_KEY"
-value = "{{ secrets.LLM_API_KEY }}"
 
 [[global.environment]]
 name = "LLM_PROVIDER"
 value = "stub"
 
-[[global.environment]]
-name = "SLACK_WEBHOOK_URL"
-value = "{{ secrets.SLACK_WEBHOOK_URL }}"
 
 [hasura]
 version = "v2.36.0"
