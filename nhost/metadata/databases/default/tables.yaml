@@ -1,0 +1,10 @@
+tables:
+  - "!include tables/public_organizations.yaml"
+  - "!include tables/public_org_members.yaml"
+  - "!include tables/public_workflows.yaml"
+  - "!include tables/public_workflow_steps.yaml"
+  - "!include tables/public_workflow_triggers.yaml"
+  - "!include tables/public_workflow_runs.yaml"
+  - "!include tables/public_step_runs.yaml"
+  - "!include tables/public_workflow_outputs.yaml"
+  - "!include tables/public_org_usage_view.yaml"
