@@ -1,4 +1,4 @@
-- name: default
+- database_name: default
   kind: postgres
   configuration:
     connection_info:
